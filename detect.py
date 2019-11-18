@@ -41,7 +41,7 @@ if __name__ == "__main__":
     os.makedirs("output", exist_ok=True)
 
     # Set up model
-    model = Darknet(opt.model_def, img_size=opt.img_size).to(device)
+    model = Darknet(opt.model_def, img_size=opt.img_size, print_tensor_shapes=1).to(device)
 
     if opt.weights_path.endswith(".weights"):
         # Load darknet weights
@@ -136,6 +136,6 @@ if __name__ == "__main__":
         plt.axis("off")
         plt.gca().xaxis.set_major_locator(NullLocator())
         plt.gca().yaxis.set_major_locator(NullLocator())
-        filename = path.split("/")[-1].split(".")[0]
+        filename = os.path.split(path)[-1]
         plt.savefig(f"output/{filename}.png", bbox_inches="tight", pad_inches=0.0)
         plt.close()

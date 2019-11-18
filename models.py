@@ -234,8 +234,9 @@ class YOLOLayer(nn.Module):
 class Darknet(nn.Module):
     """YOLOv3 object detection model"""
 
-    def __init__(self, config_path, img_size=416):
+    def __init__(self, config_path, img_size=416, print_tensor_shapes=0):
         super(Darknet, self).__init__()
+        self.print_tensor_shapes = print_tensor_shapes
         self.module_defs = parse_model_config(config_path)
         self.hyperparams, self.module_list = create_modules(self.module_defs)
         self.yolo_layers = [layer[0] for layer in self.module_list if hasattr(layer[0], "metrics")]
@@ -245,6 +246,8 @@ class Darknet(nn.Module):
 
     def forward(self, x, targets=None):
         img_dim = x.shape[2]
+        if self.print_tensor_shapes > 0:
+            print(f'input shape: {list(x.shape)}')
         loss = 0
         layer_outputs, yolo_outputs = [], []
         for i, (module_def, module) in enumerate(zip(self.module_defs, self.module_list)):
@@ -260,6 +263,9 @@ class Darknet(nn.Module):
                 loss += layer_loss
                 yolo_outputs.append(x)
             layer_outputs.append(x)
+            if self.print_tensor_shapes > 0:
+                print(f'output shape at layer {i:3}: {list(x.shape)}')
+        self.print_tensor_shapes -= 1
         yolo_outputs = to_cpu(torch.cat(yolo_outputs, 1))
         return yolo_outputs if targets is None else (loss, yolo_outputs)
 
